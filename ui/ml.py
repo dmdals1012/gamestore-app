@@ -1,6 +1,7 @@
 import streamlit as st
 import torch
 import numpy as np
+np.import_array()
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 from datasets import load_dataset
