@@ -166,21 +166,22 @@ def app():
                 st.write(response.response)
 
     elif search_method == '게임 이름':
-        game_name = st.text_input('🕹️ 게임 이름을 입력하세요:')
-        if game_name:
+        game_names = sorted(df['name'].unique(), key=lambda x: (x is None, x))
+        selected_game = st.selectbox('🕹️ 게임을 선택하세요:', game_names)
+        if st.button('추천 받기 🚀'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
-                nlp_recommendations = get_nlp_recommendations(game_name)
-                collab_recommendations = get_collaborative_recommendations(game_name)
+                nlp_recommendations = get_nlp_recommendations(selected_game)
+                collab_recommendations = get_collaborative_recommendations(selected_game)
             
             if not nlp_recommendations.empty:
-                st.subheader(f'🌟 {game_name}와(과) 유사한 게임 추천:')
+                st.subheader(f'🌟 {selected_game}와(과) 유사한 게임 추천:')
                 
                 ensemble_recs = ensemble_recommendations(nlp_recommendations, collab_recommendations)
                 display_game_cards(ensemble_recs)
                 
                 st.info("ℹ️ 이 추천 목록은 NLP 기반, 협업 필터링 기반 추천 시스템의 결과를 종합하여 만들어졌습니다.")
             else:
-                st.warning('⚠️ 게임을 찾을 수 없습니다. 철자를 확인하고 다시 시도해주세요.')
+                st.warning('⚠️ 선택한 게임에 대한 추천을 생성할 수 없습니다.')
 
     elif search_method == '장르':
         genres = sorted(df['genre'].unique())
