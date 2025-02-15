@@ -8,4 +8,7 @@ huggingface_hub
 joblib
 llama_index.llms.huggingface_api
 llama_index
+llama-index-embeddings-huggingface
+transformers
+torch
 
