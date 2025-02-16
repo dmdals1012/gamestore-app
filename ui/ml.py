@@ -9,6 +9,11 @@ from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings, StorageContext, load_index_from_storage
 import os
+from streamlit_lottie import st_lottie
+import requests
+
+# 앱 타이틀과 설명
+st.set_page_config(page_title="Steam 게임 추천", page_icon="🎮", layout="wide")
 
 def get_huggingface_token():   
     token = os.environ.get('HUGGINGFACE_API_TOKEN')
@@ -142,20 +147,42 @@ def display_game_cards(games):
         </div>
         """, unsafe_allow_html=True)
 
+def load_lottie_url(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
 def app():
     global df, nlp_embeddings, collab_model
     df, nlp_embeddings, collab_model = load_data_and_models()
 
-    if 'description' not in df.columns:
-        df['description'] = df.apply(generate_game_description, axis=1)
+    
+    
+    # 헤더 섹션
+    header_col1, header_col2 = st.columns([3, 1])
+    with header_col1:
+        st.title("🎮 Steam 게임 추천 시스템")
+        st.subheader("당신의 다음 최애 게임을 찾아보세요!")
+    with header_col2:
+        lottie_gaming = load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_xyadoh9h.json")
+        st_lottie(lottie_gaming, height=150)
 
-    st.title('🎮 Steam 게임 추천')
+    # 사이드바 설정
+    with st.sidebar:
+        st.subheader("📊 데이터셋 정보")
+        st.info(f"🎮 전체 게임 수: {len(df)}")
+        st.info(f"🏷️ 고유 장르 수: {df['genre'].nunique()}")
+        st.info(f"🏢 고유 개발사 수: {df['developer'].nunique()}")
+        
+        st.markdown("---")
+        st.subheader("🔍 검색 방법 선택")
+        search_method = st.radio("", ('게임 이름', '장르', '개발사', '챗봇'))
 
     initialize_models()
     index = get_index_from_huggingface()
 
-    search_method = st.radio("🔍 검색 방법 선택:", ('게임 이름', '장르', '개발사', '챗봇'))
-
+    # 메인 컨텐츠
     if search_method == '챗봇':
         st.subheader("🤖 게임 추천 챗봇")
         user_input = st.text_input("게임에 대해 무엇이든 물어보세요:")
@@ -163,12 +190,12 @@ def app():
             with st.spinner('AI가 답변을 생성 중입니다... 🤖'):
                 query_engine = index.as_query_engine()
                 response = query_engine.query(user_input)
-                st.write(response.response)
+                st.success(response.response)
 
     elif search_method == '게임 이름':
         game_names = sorted(df['name'].unique(), key=lambda x: (x is None, x))
         selected_game = st.selectbox('🕹️ 게임을 선택하세요:', game_names)
-        if st.button('추천 받기 🚀'):
+        if st.button('추천 받기 🚀', key='game_name_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 nlp_recommendations = get_nlp_recommendations(selected_game)
                 collab_recommendations = get_collaborative_recommendations(selected_game)
@@ -186,7 +213,7 @@ def app():
     elif search_method == '장르':
         genres = sorted(df['genre'].unique())
         selected_genre = st.selectbox('🎭 장르를 선택하세요:', genres)
-        if st.button('추천 받기 🚀'):
+        if st.button('추천 받기 🚀', key='genre_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 genre_recommendations = get_recommendations_by_genre(selected_genre)
             
@@ -198,7 +225,7 @@ def app():
     elif search_method == '개발사':
         developers = sorted(df['developer'].unique())
         selected_developer = st.selectbox('🏢 개발사를 선택하세요:', developers)
-        if st.button('추천 받기 🚀'):
+        if st.button('추천 받기 🚀', key='developer_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 developer_recommendations = get_recommendations_by_developer(selected_developer)
             
@@ -207,7 +234,9 @@ def app():
             
             st.info("ℹ️ 이 추천 목록은 선택한 개발사를 기반으로 만들어졌습니다.")
 
-    st.sidebar.subheader('📊 데이터셋 정보')
-    st.sidebar.write(f"전체 게임 수: {len(df)}")
-    st.sidebar.write(f"고유 장르 수: {df['genre'].nunique()}")
-    st.sidebar.write(f"고유 개발사 수: {df['developer'].nunique()}")
+    # 푸터
+    st.markdown("---")
+    st.markdown("Made with ❤️ by Your Game Recommendation Team")
+
+if __name__ == "__main__":
+    app()
