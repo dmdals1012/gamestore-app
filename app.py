@@ -115,26 +115,7 @@ def run():
         search_method = ml.app()
         st.session_state['search_method'] = search_method
 
-    # 챗봇 버튼 (게임 추천 페이지의 챗봇 탭이 아닐 때만 표시)
-    if not (st.session_state.current_app == "게임 추천" and st.session_state.get('search_method') == "챗봇"):
-        if st.button("💬 추천 받은 게임이 궁금하시다면?", key="chatbot_button"):
-            st.session_state['show_chatbot'] = not st.session_state.get('show_chatbot', False)
-            st.rerun()
-
-    # 챗봇 팝업
-    if st.session_state.get('show_chatbot', False):
-        with st.container():
-            st.markdown('<div class="chat-popup">', unsafe_allow_html=True)
-            st.write("추천 받은 게임이 궁금하시다면?")
-            user_input = st.text_input("질문을 입력하세요:", key="chatbot_input")
-            if user_input:
-                with st.spinner("AI가 답변을 생성 중입니다... 🤖"):
-                    try:
-                        response = st.session_state['query_engine'].query(user_input)
-                        st.write(response.response)
-                    except Exception as e:
-                        st.error(f"오류가 발생했습니다: {str(e)}")
-            st.markdown('</div>', unsafe_allow_html=True)
+    
 
 if __name__ == '__main__':
     run()
