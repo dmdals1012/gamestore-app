@@ -13,37 +13,34 @@ from streamlit_lottie import st_lottie
 import requests
 from streamlit_option_menu import option_menu
 
-# 앱 타이틀과 설명
-st.set_page_config(page_title="Steam 게임 추천", page_icon="🎮", layout="wide")
-
-def get_huggingface_token():   
+def get_huggingface_token():
     token = os.environ.get('HUGGINGFACE_API_TOKEN')
     if token is None:
         token = st.secrets.get('HUGGINGFACE_API_TOKEN')
     return token
 
 @st.cache_resource
-def initialize_models(llm_model_name="google/gemma-2-9b-it"): # 기본 모델 변경
+def initialize_models(llm_model_name="google/gemma-2-9b-it"):
     token = get_huggingface_token()
     llm = HuggingFaceInferenceAPI(
         model_name=llm_model_name,
         temperature=0.5,
-        system_prompt = """
+        system_prompt="""
 당신은 Steam 플랫폼에서 제공되는 다양한 게임에 대한 깊은 지식을 가진 전문적인 게임 추천 AI 어시스턴트입니다. 다음 지침을 **반드시** 따르세요:
 
     1. 사용자의 질문을 **정확하고 완전하게** 분석하여 사용자의 의도를 파악하세요.
-    2. Steam에서 제공하는 게임을 **최대한 활용**하여 사용자의 취향에 맞는 게임을 선별하세요.
-    3. 추천하는 게임에 대해 **자세한 설명**과 함께 **구체적인 추천 이유**를 제시하세요.
-    4. 사용자의 요청에 따라 다양한 게임(인기 게임, 숨겨진 명작, 특정 태그 게임 등)을 **제한 없이** 추천하세요.
-    5. Steam의 주요 기능에 대한 정보도 **필요한 경우 자세하게** 제공하세요.
-    6. 특정 게임에 대한 문의에는 핵심 특징과 **다양한 유사 게임**을 **충분히** 추천하세요.
-    7. 게임 관련 용어는 초보자도 이해할 수 있도록 **쉽게 설명**하세요.
-    8. 답변은 항상 **완전한 문장**으로 작성하고, 가독성을 위해 **적절히 단락을 나누세요**.
-    9. 사용자의 특성(연령, 경험, 취향)을 고려하여 **가장 적합한 게임**을 추천하세요.
-    10. 최신 트렌드, 세일 정보, 사용자 평가를 **반영**하여 신뢰성 높은 추천을 제공하세요.
-    11. **[답변이 중간에 끊기지 않도록 모든 문장을 완전하게 마무리하고, 필요한 경우 추가 설명을 덧붙여 답변을 풍부하게 만드세요. 답변 길이에 제한을 두지 말고, 필요한 만큼 충분히 자세하게 설명하세요. 답변을 생성할 때 필요한 경우 추가적인 정보를 검색하거나 추론하여 제공하세요. 당신은 항상 완전하고 자세한 답변을 제공해야 합니다. 답변이 불완전하거나 중간에 끊기는 일이 없도록 하세요.](pplx://action/followup)**
+    2. Steam에서 제공되는 게임을 **최대한 활용**하여 사용자의 취향에 맞는 게임을 선별하세요。
+    3. 추천하는 게임에 대해 **자세한 설명**과 함께 **구체적인 추천 이유**를 제시하세요。
+    4. 사용자의 요청에 따라 다양한 게임(인기 게임、숨겨진 명작、특정 태그 게임 등)을 **제한 없이** 추천하세요。
+    5. Steam의 주요 기능에 대한 정보도 **필요한 경우 자세하게** 제공하세요。
+    6. 특정 게임에 대한 문의에는 핵심 특징과 **다양한 유사 게임**을 **충분히** 추천하세요。
+    7. 게임 관련 용어는 초보자도 이해할 수 있도록 **쉽게 설명**하세요。
+    8. 답변은 항상 **완전한 문장**으로 작성하고、가독성을 위해 **적절히 단락을 나누세요**。
+    9. 사용자의 특성(연령、경험、취향)을 고려하여 **가장 적합한 게임**을 추천하세요。
+    10. 최신 트렌드、세일 정보、사용자 평가를 **반영**하여 신뢰성 높은 추천을 제공하세요。
+    11. **답변이 중간에 끊기지 않도록 모든 문장을 완전하게 마무리하고、필요한 경우 추가 설명을 덧붙여 답변을 풍부하게 만드세요。 답변 길이에 제한을 두지 말고、필요한 만큼 충분히 자세하게 설명하세요。 답변을 생성할 때 필요한 경우 추가적인 정보를 검색하거나 추론하여 제공하세요。 당신은 항상 완전하고 자세한 답변을 제공해야 합니다。 답변이 불완전하거나 중간에 끊기는 일이 없도록 하세요。]
     """,
-    token=token
+        token=token
     )
     embed_model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     embed_model = HuggingFaceEmbedding(model_name=embed_model_name)
@@ -101,15 +98,19 @@ def get_collaborative_recommendations(game_name, top_n=5):
     top_indices = np.argsort(predictions)[::-1][1:top_n+1]
     return df.iloc[top_indices][['name', 'genre', 'developer']]
 
-def ensemble_recommendations(nlp_recs, collab_recs, weights=[0.5, 0.5], top_n=5):
+def ensemble_recommendations(game_name, weights=[0.5, 0.5], top_n=5):
+    nlp_recs = get_nlp_recommendations(game_name, top_n=top_n)
+    collab_recs = get_collaborative_recommendations(game_name, top_n=top_n)
+    if nlp_recs.empty or collab_recs.empty:
+        return pd.DataFrame()
     all_games = set(nlp_recs['name'].tolist() + collab_recs['name'].tolist())
     scores = {}
     for game in all_games:
         score = 0
         if game in nlp_recs['name'].values:
-            score += weights[0] * (len(nlp_recs) - nlp_recs[nlp_recs['name'] == game].index[0])
+            score += weights[0] * (len(nlp_recs) - list(nlp_recs['name']).index(game))
         if game in collab_recs['name'].values:
-            score += weights[1] * (len(collab_recs) - collab_recs[collab_recs['name'] == game].index[0])
+            score += weights[1] * (len(collab_recs) - list(collab_recs['name']).index(game))
         scores[game] = score
     top_games = sorted(scores, key=scores.get, reverse=True)[:top_n]
     return df[df['name'].isin(top_games)][['name', 'genre', 'developer']]
@@ -153,8 +154,9 @@ def load_lottie_url(url: str):
 def app():
     global df, nlp_embeddings, collab_model
     df, nlp_embeddings, collab_model = load_data_and_models()
-    
-    # 헤더 섹션
+    initialize_models()
+    index = get_index_from_huggingface()
+
     header_col1, header_col2 = st.columns([3, 1])
     with header_col1:
         st.title("🎮 Steam 게임 추천 시스템")
@@ -163,17 +165,15 @@ def app():
         lottie_gaming = load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_xyadoh9h.json")
         st_lottie(lottie_gaming, height=150)
 
-    # 사이드바 설정
     with st.sidebar:
         st.subheader("📊 데이터셋 정보")
         st.info(f"🎮 전체 게임 수: {len(df)}")
         st.info(f"🏷️ 고유 장르 수: {df['genre'].nunique()}")
         st.info(f"🏢 고유 개발사 수: {df['developer'].nunique()}")
-        
+
         st.markdown("---")
         st.subheader("🔍 검색 방법 선택")
-        
-        # option_menu를 사용하여 검색 방법 선택
+
         search_method = option_menu(
             menu_title=None,
             options=["게임 이름", "장르", "개발사", "챗봇"],
@@ -199,10 +199,6 @@ def app():
         elif search_method == "챗봇":
             st.write("궁금한 점이나 원하는 게임 스타일을 자유롭게 질문해보세요!")
 
-    initialize_models()
-    index = get_index_from_huggingface()
-
-    # 메인 컨텐츠
     if search_method == '챗봇':
         st.subheader("🤖 게임 추천 챗봇")
         st.write("어떤 게임을 찾고 있는지 챗봇에게 자유롭게 물어보세요. 몇 가지 예시 질문:")
@@ -218,52 +214,45 @@ def app():
 
     elif search_method == '게임 이름':
         game_names = sorted(df['name'].unique(), key=lambda x: (x is None, x))
-        st.subheader("🎮 어떤 게임과 비슷한 게임을 찾으시나요?")  # 제목 추가
+        st.subheader("🎮 어떤 게임과 비슷한 게임을 찾으시나요?")
         selected_game = st.selectbox('🕹️ 게임을 선택하세요:', game_names)
         if st.button('추천 받기 🚀', key='game_name_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
-                nlp_recommendations = get_nlp_recommendations(selected_game)
-                collab_recommendations = get_collaborative_recommendations(selected_game)
+                ensemble_recs = ensemble_recommendations(selected_game)
             
-            if not nlp_recommendations.empty:
+            if not ensemble_recs.empty:
                 st.subheader(f'🌟 {selected_game}와(과) 유사한 게임 추천:')
-                
-                ensemble_recs = ensemble_recommendations(nlp_recommendations, collab_recommendations)
                 display_game_cards(ensemble_recs)
-                
                 st.info("ℹ️ 이 추천 목록은 NLP 기반, 협업 필터링 기반 추천 시스템의 결과를 종합하여 만들어졌습니다.")
             else:
                 st.warning('⚠️ 선택한 게임에 대한 추천을 생성할 수 없습니다.')
 
     elif search_method == '장르':
         genres = sorted(df['genre'].unique())
-        st.subheader("🎭 어떤 장르의 게임을 찾으시나요?")  # 제목 추가
+        st.subheader("🎭 어떤 장르의 게임을 찾으시나요?")
         selected_genre = st.selectbox('🎭 장르를 선택하세요:', genres)
         if st.button('추천 받기 🚀', key='genre_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 genre_recommendations = get_recommendations_by_genre(selected_genre)
-            
+
             st.subheader(f'🌟 {selected_genre} 장르의 추천 게임:')
             display_game_cards(genre_recommendations)
-            
+
             st.info("ℹ️ 이 추천 목록은 선택한 장르를 기반으로 만들어졌습니다.")
 
     elif search_method == '개발사':
         developers = sorted(df['developer'].unique())
-        st.subheader("🏢 어떤 개발사의 게임을 찾으시나요?")  # 제목 추가
+        st.subheader("🏢 어떤 개발사의 게임을 찾으시나요?")
         selected_developer = st.selectbox('🏢 개발사를 선택하세요:', developers)
         if st.button('추천 받기 🚀', key='developer_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 developer_recommendations = get_recommendations_by_developer(selected_developer)
-            
+
             st.subheader(f'🌟 {selected_developer}의 추천 게임:')
             display_game_cards(developer_recommendations)
-            
+
             st.info("ℹ️ 이 추천 목록은 선택한 개발사를 기반으로 만들어졌습니다.")
 
-    # 푸터
-    st.markdown("---")
-    st.markdown("Made with ❤️ by Your Game Recommendation Team")
+    return search_method
 
-if __name__ == "__main__":
-    app()
+
