@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from ui import description, home
 import requests
+from ui import ml
 
 def load_lottie_url(url: str):
     r = requests.get(url)
@@ -16,6 +17,14 @@ if 'show_chatbot' not in st.session_state:
     st.session_state['show_chatbot'] = False
 if 'search_method' not in st.session_state:
     st.session_state['search_method'] = None
+if 'query_engine' not in st.session_state:
+    st.session_state['query_engine'] = None
+
+@st.cache_resource
+def initialize_app():
+    ml.initialize_models()
+    index = ml.get_index_from_huggingface()
+    return index.as_query_engine()
 
 def run():
     st.set_page_config(
@@ -25,7 +34,10 @@ def run():
         initial_sidebar_state="expanded",
     )
 
-    # 챗봇 UI 스타일
+    # 앱 초기화 및 query_engine 생성
+    st.session_state['query_engine'] = initialize_app()
+
+    # 챗봇 UI 스타일 및 레이아웃 조정
     st.markdown(
         """
         <style>
@@ -56,7 +68,13 @@ def run():
             border-radius: 10px;
             padding: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            z-index: 1001;
+        }
+        .stApp [data-testid="stToolbar"] {
+            display: none;
+        }
+        .stApp footer {
+            display: none;
         }
         </style>
         """,
@@ -94,12 +112,14 @@ def run():
     elif st.session_state.current_app == "앱 소개":
         description.app()
     elif st.session_state.current_app == "게임 추천":
-        from ui import ml  # ml 모듈을 여기서 임포트
         search_method = ml.app()
         st.session_state['search_method'] = search_method
 
-    # 챗봇 버튼 (항상 표시)
-    st.markdown('<button id="chatbot-button" onclick="toggleChatbot()">💬</button>', unsafe_allow_html=True)
+    # 챗봇 버튼 (게임 추천 페이지의 챗봇 탭이 아닐 때만 표시)
+    if not (st.session_state.current_app == "게임 추천" and st.session_state.get('search_method') == "챗봇"):
+        if st.button("💬 추천 받은 게임이 궁금하시다면?", key="chatbot_button"):
+            st.session_state['show_chatbot'] = not st.session_state.get('show_chatbot', False)
+            st.rerun()
 
     # 챗봇 팝업
     if st.session_state.get('show_chatbot', False):
@@ -109,23 +129,12 @@ def run():
             user_input = st.text_input("질문을 입력하세요:", key="chatbot_input")
             if user_input:
                 with st.spinner("AI가 답변을 생성 중입니다... 🤖"):
-                    ml.initialize_models()
-                    ml.index = ml.get_index_from_huggingface()
-                    query_engine = ml.index.as_query_engine()
-                    response = query_engine.query(user_input)
-                    st.write(response.response)
+                    try:
+                        response = st.session_state['query_engine'].query(user_input)
+                        st.write(response.response)
+                    except Exception as e:
+                        st.error(f"오류가 발생했습니다: {str(e)}")
             st.markdown('</div>', unsafe_allow_html=True)
-
-    # JavaScript for toggling chatbot
-    st.markdown("""
-    <script>
-    function toggleChatbot() {
-        const chatbotState = window.parent.getStApp().state.show_chatbot;
-        window.parent.getStApp().state.show_chatbot = !chatbotState;
-        window.parent.getStApp().forceRerun();
-    }
-    </script>
-    """, unsafe_allow_html=True)
 
 if __name__ == '__main__':
     run()
