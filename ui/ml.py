@@ -220,7 +220,7 @@ def app():
     elif search_method == '게임 이름':
         game_names = sorted(df['name'].unique(), key=lambda x: (x is None, x))
         st.subheader("🎮 어떤 게임과 비슷한 게임을 찾으시나요?")
-        selected_game = st.selectbox('🕹️ 게임을 선택하세요:', game_names)
+        selected_game = st.selectbox('🕹️ 게임을 검색하거나 선택하세요:', game_names)
         if st.button('추천 받기 🚀', key='game_name_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 ensemble_recs = ensemble_recommendations(selected_game)
@@ -234,7 +234,7 @@ def app():
     elif search_method == '장르':
         genres = sorted(df['genre'].unique())
         st.subheader("🎭 어떤 장르의 게임을 찾으시나요?")
-        selected_genre = st.selectbox('🎭 장르를 선택하세요:', genres)
+        selected_genre = st.selectbox('🎭 장르를 검색하거나 선택하세요:', genres)
         if st.button('추천 받기 🚀', key='genre_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 genre_recommendations = get_recommendations_by_genre(selected_genre)
@@ -247,7 +247,7 @@ def app():
     elif search_method == '개발사':
         developers = sorted(df['developer'].unique())
         st.subheader("🏢 어떤 개발사의 게임을 찾으시나요?")
-        selected_developer = st.selectbox('🏢 개발사를 선택하세요:', developers)
+        selected_developer = st.selectbox('🏢 개발사를 검색하거나 선택하세요:', developers)
         if st.button('추천 받기 🚀', key='developer_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 developer_recommendations = get_recommendations_by_developer(selected_developer)
