@@ -146,7 +146,7 @@ def app():
         html_table = sample_data.to_html(index=False, escape=False)
         st.markdown(html_table, unsafe_allow_html=True)
 
-        st.caption("참고: 이 데이터는 최신 데이터가 아닙니다.")
+        st.caption("참고: 본 데이터는 각 게임별 정보를 담고 있습니다(장르, 가격 등등)")
 
     st.markdown("---")
     st.markdown("© 2025 Steam 게임 추천 시스템 | 모든 권리 보유")
