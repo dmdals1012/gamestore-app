@@ -224,11 +224,10 @@ def app():
         if st.button('추천 받기 🚀', key='game_name_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 ensemble_recs = ensemble_recommendations(selected_game)
-            
+                st.success("원하시는 게임 골라 플레이 해보세요!")
             if not ensemble_recs.empty:
                 st.subheader(f'🌟 {selected_game}와(과) 유사한 게임 추천:')
                 display_game_cards(ensemble_recs)
-                st.info("ℹ️ 이 추천 목록은 NLP 기반, 협업 필터링 기반 추천 시스템의 결과를 종합하여 만들어졌습니다.")
             else:
                 st.warning('⚠️ 선택한 게임에 대한 추천을 생성할 수 없습니다.')
 
@@ -239,11 +238,11 @@ def app():
         if st.button('추천 받기 🚀', key='genre_button'):
             with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
                 genre_recommendations = get_recommendations_by_genre(selected_genre)
-
+                st.success("원하시는 게임을 골라 플레이 해보세요!")
             st.subheader(f'🌟 {selected_genre} 장르의 추천 게임:')
             display_game_cards(genre_recommendations)
 
-            st.info("ℹ️ 이 추천 목록은 선택한 장르를 기반으로 만들어졌습니다.")
+
 
     elif search_method == '개발사':
         developers = sorted(df['developer'].unique())
@@ -256,7 +255,7 @@ def app():
             st.subheader(f'🌟 {selected_developer}의 추천 게임:')
             display_game_cards(developer_recommendations)
 
-            st.info("ℹ️ 이 추천 목록은 선택한 개발사를 기반으로 만들어졌습니다.")
+            st.success("원하시는 게임을 골라 플레이 해보세요!")
 
     return search_method
 
