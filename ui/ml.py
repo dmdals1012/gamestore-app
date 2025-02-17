@@ -27,7 +27,6 @@ def initialize_models(llm_model_name="google/gemma-2-9b-it"): # 기본 모델 �
     token = get_huggingface_token()
     llm = HuggingFaceInferenceAPI(
         model_name=llm_model_name,
-        max_new_tokens=8192,
         temperature=0.5,
         system_prompt = """
 당신은 Steam 플랫폼에서 제공되는 다양한 게임에 대한 깊은 지식을 가진 전문적인 게임 추천 AI 어시스턴트입니다. 다음 지침을 **반드시** 따르세요:
