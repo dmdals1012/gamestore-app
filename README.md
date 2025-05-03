@@ -5,16 +5,6 @@
 Streamlit App : https://gamestore-app-8zysuajnm3ohhzjprxpkkj.streamlit.app/
 
 
-https://sb-travel.s3.ap-northeast-2.amazonaws.com/streamlit-1.png
-
-
-
-
-
-
-
-
-
 
 ---
 
