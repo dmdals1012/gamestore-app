@@ -2,10 +2,11 @@
 
 > **당신의 다음 최애 게임을 찾는 여정을 도와주는 AI 기반 추천 시스템**
 
-https://gamestore-app-8zysuajnm3ohhzjprxpkkj.streamlit.app/
+Streamlit App : https://gamestore-app-8zysuajnm3ohhzjprxpkkj.streamlit.app/
 
 
-./streamlit-1.png
+https://sb-travel.s3.ap-northeast-2.amazonaws.com/streamlit-1.png
+
 
 
 
@@ -64,16 +65,17 @@ pip install -r requirements.txt
 - joblib
 - streamlit_option_menu
 - streamlit-lottie
+```
 
 
-2. Hugging Face Token 설정
+2. **Hugging Face Token 설정**
 
 .streamlit/secrets.toml 파일 생성 후 다음 내용 추가:
  - HUGGINGFACE_API_TOKEN = "huggingface_token"
 
 
 
-🧠 추천 방식 상세
+**🧠 추천 방식 상세**
 1. 🔠 NLP 기반 추천
 - 문장 임베딩 모델: paraphrase-multilingual-MiniLM-L12-v2
 
@@ -86,9 +88,7 @@ pip install -r requirements.txt
 - 두 방식의 결과를 가중 평균으로 결합
 - 기본 가중치: weights = [0.5, 0.5]
 
-
-
-🤖 AI 챗봇 기능
+4. 🤖 AI 챗봇 기능
 - 모델: google/gemma-2-9b-it (HuggingFace Inference API 기반)
 
 - 역할: 전문 게임 추천 AI
