@@ -1,5 +1,5 @@
 streamlit-option-menu
-lama_index.llms.huggingface
+llama-index-llms-huggingface
 llama-index-embeddings-huggingface
 scikit-surprise
 streamlit==1.42.0
