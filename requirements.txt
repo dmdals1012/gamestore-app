@@ -1,17 +1,23 @@
-streamlit-option-menu
-llama-index-llms-huggingface
-llama-index-embeddings-huggingface
-scikit-surprise
 streamlit==1.42.0
+streamlit-option-menu
+streamlit_lottie
+plotly
+
 numpy==1.26.4
 pandas==2.2.3
 scikit-learn==1.6.1
-datasets==3.3.0
-huggingface-hub==0.28.1
+scikit-surprise
 joblib==1.4.2
-llama-index==0.12.17
-torch==2.6.0
-sentence-transformers==3.4.1
+
+datasets==3.3.0
 transformers==4.48.3
-plotly
-streamlit_lottie
+huggingface-hub==0.28.1
+sentence-transformers==3.4.1
+torch==2.6.0
+
+# llama-index core
+llama-index==0.12.17
+
+# 버전 맞춰서!
+llama-index-llms-huggingface==0.1.2
+llama-index-embeddings-huggingface==0.1.2
