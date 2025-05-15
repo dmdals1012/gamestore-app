@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download, snapshot_download
 import joblib
-from llama_index.llms.huggingface_api import InferenceClient
+from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings, StorageContext, load_index_from_storage
 import os
@@ -22,7 +22,7 @@ def get_huggingface_token():
 @st.cache_resource
 def initialize_models(llm_model_name="google/gemma-3-27b-it"):
     token = get_huggingface_token()
-    llm = InferenceClient(
+    llm = HuggingFaceInferenceAPI(
         model_name=llm_model_name,
         max_tokens=8192,
         temperature=0.3,
