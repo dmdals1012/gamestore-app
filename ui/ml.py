@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download, snapshot_download
 import joblib
-from llama_index.llms.huggingface import HuggingFaceInferenceAPI
+from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings, StorageContext, load_index_from_storage
 import os
