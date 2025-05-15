@@ -10,14 +10,10 @@ scikit-surprise
 joblib==1.4.2
 
 datasets==3.3.0
-transformers==4.48.3
-huggingface-hub==0.28.1
-sentence-transformers==3.4.1
-torch==2.6.0
+transformers==4.33.2
+huggingface-hub==0.16.4
+sentence-transformers==2.2.2
+torch==2.0.1
 
-# llama-index core
-llama-index==0.12.17
-
-# 버전 맞춰서!
-llama-index-llms-huggingface==0.1.2
-llama-index-embeddings-huggingface==0.1.2
+llama-index==0.15.3
+llama-index[llms-huggingface]==0.15.3
