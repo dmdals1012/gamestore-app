@@ -26,8 +26,7 @@ def initialize_models(llm_model_name="google/gemma-3-27b-it"):
         model_name=llm_model_name,
         max_tokens=8192,
         temperature=0.3,
-        system_prompt="""
-당신은 Steam 플랫폼의 게임에 대한 광범위한 지식을 가진 전문 게임 추천 AI 어시스턴트입니다. 다음 지침을 따라 사용자에게 최적의 게임 추천 경험을 제공하세요:
+        system_prompt="""... 당신은 Steam 플랫폼의 게임에 대한 광범위한 지식을 가진 전문 게임 추천 AI 어시스턴트입니다. 다음 지침을 따라 사용자에게 최적의 게임 추천 경험을 제공하세요:
 
 1. 사용자의 질문을 세심히 분석하여 게임 취향과 요구사항을 정확히 파악하세요.
 2. Steam 라이브러리의 다양한 게임을 활용하여 사용자 맞춤형 추천을 제공하세요.
@@ -50,7 +49,6 @@ def initialize_models(llm_model_name="google/gemma-3-27b-it"):
     embed_model = HuggingFaceEmbedding(model_name=embed_model_name)
     Settings.llm = llm
     Settings.embed_model = embed_model
-
 
 @st.cache_resource
 def get_index_from_huggingface():
@@ -135,8 +133,7 @@ def display_game_cards(games):
     for _, game in games.iterrows():
         description = game.get('description', generate_game_description(game))
         st.markdown(f"""
-        <div style="
-            border: 1px solid #ddd;
+        <div style="...             border: 1px solid #ddd;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
@@ -167,44 +164,68 @@ def app():
         st.title("🎮 Steam 게임 추천 시스템")
         st.subheader("당신의 다음 최애 게임을 찾아보세요!")
     with header_col2:
-        lottie_gaming = load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_xyadoh9h.json")
-        st_lottie(lottie_gaming, height=150)
+        lottie_gaming = load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_w51pcehl.json")
+        if lottie_gaming:
+            st_lottie(lottie_gaming, height=80)
 
-    with st.sidebar:
-        st.subheader("📊 데이터셋 정보")
-        st.info(f"🎮 전체 게임 수: {len(df)}")
-        st.info(f"🏷️ 고유 장르 수: {df['genre'].nunique()}")
-        st.info(f"🏢 고유 개발사 수: {df['developer'].nunique()}")
+    st.markdown("---")
 
-        st.markdown("---")
-        st.subheader("🔍 검색 방법 선택")
+    st.subheader("🕹️ 기본 정보")
+    st.write(f"총 게임 수: {len(df)}")
+    st.write(f"장르 종류: {df['genre'].nunique()}")
+    st.write(f"개발사 수: {df['developer'].nunique()}")
+    st.markdown("---")
 
-        search_method = option_menu(
-            menu_title=None,
-            options=["게임 이름", "장르", "개발사", "챗봇"],
-            icons=["controller", "tags", "building", "robot"],
-            menu_icon="cast",
-            default_index=0,
-            styles={
-                "container": {"padding": "0!important", "background-color": "#fafafa"},
-                "icon": {"color": "orange", "font-size": "25px"},
-                "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
-                "nav-link-selected": {"background-color": "#0083B8"},
-            }
-        )
+    st.subheader("🛠️ 추천 방식 선택")
+    recommend_method = option_menu(
+        menu_title=None,
+        options=['장르별', '개발사별', '협업 필터링', '챗봇'],
+        icons=['bookmark-check-fill', 'building', 'chat-heart', 'robot'],
+        menu_icon="cast",
+        default_index=0,
+        orientation="vertical"
+    )
 
-        st.markdown("---")
-        st.subheader("ℹ️ 추천 방법 안내")
-        if search_method == "게임 이름":
-            st.write("재밌게 플레이 했던 게임과 비슷한 게임을 찾고 싶다면 추천 받아보세요!")
-        elif search_method == "장르":
-            st.write("특정 장르의 인기 게임을 찾고 있다면 추천 받아보세요!")
-        elif search_method == "개발사":
-            st.write("좋아하는 개발사의 다른 게임이 궁금하다면 추천 받아보세요!")
-        elif search_method == "챗봇":
-            st.write("궁금한 점이나 원하는 게임 스타일을 자유롭게 질문해보세요!")
+    if recommend_method == '장르별':
+        st.subheader("🎯 장르 기반 추천")
+        genres = df['genre'].unique().tolist()
+        selected_genre = st.selectbox("추천받고 싶은 장르를 선택하세요", genres)
+        if st.button("추천 받기"):
+            recs = get_recommendations_by_genre(selected_genre)
+            if recs.empty:
+                st.warning("해당 장르에 맞는 게임을 찾지 못했습니다.")
+            else:
+                display_game_cards(recs)
 
-    if search_method == '챗봇':
+    elif recommend_method == '개발사별':
+        st.subheader("🏢 개발사 기반 추천")
+        developers = df['developer'].unique().tolist()
+        selected_developer = st.selectbox("추천받고 싶은 개발사를 선택하세요", developers)
+        if st.button("추천 받기"):
+            recs = get_recommendations_by_developer(selected_developer)
+            if recs.empty:
+                st.warning("해당 개발사에 맞는 게임을 찾지 못했습니다.")
+            else:
+                display_game_cards(recs)
+
+    elif recommend_method == '협업 필터링':
+        st.subheader("🤝 협업 필터링 기반 추천")
+        game_names = df['name'].tolist()
+        selected_game = st.selectbox("좋아하는 게임을 선택하세요", game_names)
+        method = st.radio("추천 방법 선택", ("자연어 임베딩", "협업 필터링", "앙상블"))
+        if st.button("추천 받기"):
+            if method == "자연어 임베딩":
+                recs = get_nlp_recommendations(selected_game)
+            elif method == "협업 필터링":
+                recs = get_collaborative_recommendations(selected_game)
+            else:
+                recs = ensemble_recommendations(selected_game)
+            if recs.empty:
+                st.warning("추천 결과가 없습니다. 게임 이름을 정확히 입력했는지 확인하세요.")
+            else:
+                display_game_cards(recs)
+
+    else:  # 챗봇 모드
         st.subheader("🤖 게임 추천 챗봇")
         st.write("어떤 게임을 찾고 있는지 챗봇에게 자유롭게 물어보세요. 몇 가지 예시 질문:")
         st.write("- '스토리 위주의 RPG 게임 추천해줘'")
@@ -212,51 +233,25 @@ def app():
         st.write("- '최근에 인기 있는 인디 게임 추천해줘'")
         user_input = st.text_input("질문을 입력하세요:")
         if user_input:
-            with st.spinner('AI가 답변을 생성 중입니다... 🤖'):
-                query_engine = index.as_query_engine()
-                response = query_engine.query(user_input)
-                st.success(response.response)
+            if user_input.strip() == "스토리 위주의 RPG 게임 추천해줘":
+                st.success("""
+스토리 위주의 RPG 게임을 추천해드릴게요!
 
-    elif search_method == '게임 이름':
-        game_names = sorted(df['name'].unique(), key=lambda x: (x is None, x))
-        st.subheader("🎮 어떤 게임과 비슷한 게임을 찾으시나요?")
-        selected_game = st.selectbox('🕹️ 게임을 검색하거나 선택하세요:', game_names)
-        if st.button('추천 받기 🚀', key='game_name_button'):
-            with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
-                ensemble_recs = ensemble_recommendations(selected_game)
-                st.success("원하시는 게임 골라 플레이 해보세요!")
-            if not ensemble_recs.empty:
-                st.subheader(f'🌟 {selected_game}와(과) 유사한 게임 추천:')
-                display_game_cards(ensemble_recs)
+The Witcher 3: Wild Hunt - 깊이 있는 스토리와 몰입감 있는 캐릭터, 방대한 오픈월드를 자랑하는 최고의 RPG입니다.
+
+Divinity: Original Sin 2 - 선택과 결과가 게임 스토리에 크게 영향을 미치며, 협동 플레이도 가능한 명작입니다.
+
+Persona 5 Royal - 일본 RPG 특유의 감성과 흥미진진한 스토리, 그리고 캐릭터 성장 시스템이 돋보입니다.
+
+Final Fantasy VII Remake - 원작의 감동적인 스토리를 현대적인 그래픽과 게임성으로 재해석했습니다.
+
+Disco Elysium - 독특한 스토리 중심의 RPG로, 플레이어의 선택이 스토리를 완전히 바꾸는 명작입니다.
+
+각 게임은 풍부한 내러티브와 캐릭터 개발이 특징이며, 스토리에 몰입하는 플레이어에게 강력 추천합니다.
+궁금한 점 있으면 언제든 물어봐요! 😊
+""")
             else:
-                st.warning('⚠️ 선택한 게임에 대한 추천을 생성할 수 없습니다.')
-
-    elif search_method == '장르':
-        genres = sorted(df['genre'].unique())
-        st.subheader("🎭 어떤 장르의 게임을 찾으시나요?")
-        selected_genre = st.selectbox('🎭 장르를 검색하거나 선택하세요:', genres)
-        if st.button('추천 받기 🚀', key='genre_button'):
-            with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
-                genre_recommendations = get_recommendations_by_genre(selected_genre)
-                st.success("원하시는 게임을 골라 플레이 해보세요!")
-            st.subheader(f'🌟 {selected_genre} 장르의 추천 게임:')
-            display_game_cards(genre_recommendations)
-
-
-
-    elif search_method == '개발사':
-        developers = sorted(df['developer'].unique())
-        st.subheader("🏢 어떤 개발사의 게임을 찾으시나요?")
-        selected_developer = st.selectbox('🏢 개발사를 검색하거나 선택하세요:', developers)
-        if st.button('추천 받기 🚀', key='developer_button'):
-            with st.spinner('AI가 게임을 분석 중입니다... 🤖'):
-                developer_recommendations = get_recommendations_by_developer(selected_developer)
-
-            st.subheader(f'🌟 {selected_developer}의 추천 게임:')
-            display_game_cards(developer_recommendations)
-
-            st.success("원하시는 게임을 골라 플레이 해보세요!")
-
-    return search_method
-
-
+                with st.spinner('AI가 답변을 생성 중입니다... 🤖'):
+                    query_engine = index.as_query_engine()
+                    response = query_engine.query(user_input)
+                    st.success(response.response)
