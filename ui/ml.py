@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download, snapshot_download
 import joblib
-from llama_index.llms.huggingface import HuggingFaceLLM
+from llama_index.llms.huggingface import HuggingFaceInferenceAPI
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings, StorageContext, load_index_from_storage
 import os
@@ -22,9 +22,9 @@ def get_huggingface_token():
 @st.cache_resource
 def initialize_models(llm_model_name="google/gemma-3-27b-it"):
     token = get_huggingface_token()
-    llm = HuggingFaceLLM(
+    llm = HuggingFaceInferenceAPI(
         model_name=llm_model_name,
-        max_new_tokens=8192,
+        max_tokens=8192,
         temperature=0.3,
         system_prompt="""
 당신은 Steam 플랫폼의 게임에 대한 광범위한 지식을 가진 전문 게임 추천 AI 어시스턴트입니다. 다음 지침을 따라 사용자에게 최적의 게임 추천 경험을 제공하세요:
