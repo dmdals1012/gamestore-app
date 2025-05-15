@@ -20,7 +20,7 @@ def get_huggingface_token():
     return token
 
 @st.cache_resource
-def initialize_models(llm_model_name="google/gemma-2-9b-it"):
+def initialize_models(llm_model_name="google/gemma-3-27b-it"):
     token = get_huggingface_token()
     llm = HuggingFaceInferenceAPI(
         model_name=llm_model_name,
